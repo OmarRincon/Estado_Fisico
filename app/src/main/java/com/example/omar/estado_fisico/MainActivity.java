@@ -36,6 +36,7 @@ import com.google.android.gms.fitness.result.DailyTotalResult;
 import com.google.android.gms.fitness.result.DataReadResult;
 import com.google.android.gms.fitness.result.SessionReadResult;
 import com.google.android.gms.fitness.result.SessionStopResult;
+import com.parse.Parse;
 
 import java.text.DateFormat;
 import java.util.Calendar;
@@ -62,11 +63,7 @@ public class MainActivity extends AppCompatActivity {
         if (savedInstanceState != null) {
             authInProgress = savedInstanceState.getBoolean(AUTH_PENDING);
         }
-        // [Optional] Power your app with Local Datastore. For more info, go to
-        // https://parse.com/docs/android/guide#local-datastore
-        Parse.enableLocalDatastore(this);
-        Parse.initialize(this);
-
+        Conexion c1 = new Conexion();
         buildFitnessClient();
 
     }
