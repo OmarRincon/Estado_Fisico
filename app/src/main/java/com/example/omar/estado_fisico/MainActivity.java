@@ -3,48 +3,36 @@ package com.example.omar.estado_fisico;
 import android.content.Intent;
 import android.content.IntentSender;
 import android.os.Bundle;
-import android.service.textservice.SpellCheckerService;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.widget.EditText;
-import android.widget.TextView;
+import android.widget.Toast;
 
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GooglePlayServicesUtil;
 import com.google.android.gms.common.Scopes;
 import com.google.android.gms.common.api.GoogleApiClient;
-import com.google.android.gms.common.api.PendingResult;
 import com.google.android.gms.common.api.ResultCallback;
 import com.google.android.gms.common.api.Scope;
 import com.google.android.gms.common.api.Status;
 import com.google.android.gms.fitness.Fitness;
-import com.google.android.gms.fitness.FitnessActivities;
 import com.google.android.gms.fitness.FitnessStatusCodes;
-import com.google.android.gms.fitness.HistoryApi;
-import com.google.android.gms.fitness.data.Bucket;
-import com.google.android.gms.fitness.data.DataPoint;
 import com.google.android.gms.fitness.data.DataSet;
 import com.google.android.gms.fitness.data.DataType;
-import com.google.android.gms.fitness.data.Field;
-import com.google.android.gms.fitness.data.Session;
 import com.google.android.gms.fitness.request.DataReadRequest;
-import com.google.android.gms.fitness.request.SessionReadRequest;
-import com.google.android.gms.fitness.result.DailyTotalResult;
 import com.google.android.gms.fitness.result.DataReadResult;
-import com.google.android.gms.fitness.result.SessionReadResult;
-import com.google.android.gms.fitness.result.SessionStopResult;
+import com.parse.LogInCallback;
 import com.parse.Parse;
+import com.parse.ParseException;
+import com.parse.ParseObject;
+import com.parse.ParseUser;
 
 import java.text.DateFormat;
 import java.util.Calendar;
 import java.util.Date;
-import java.util.List;
 import java.util.concurrent.TimeUnit;
-
-import javax.sql.DataSource;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -53,6 +41,9 @@ public class MainActivity extends AppCompatActivity {
     private boolean authInProgress = false;
     private GoogleApiClient mClient = null;
     private static final String TAG = MainActivity.class.getSimpleName();
+    public static final String YOUR_APPLICATION_ID = "ohGe5NCSShiJYNeAAFwezBNYB7vQii8wyqnE21LY";
+    public static final String YOUR_CLIENT_KEY = "00gfPorhPo6HfdXPNhvvBSnvEFgBEWf8cLp6dKWZ" ;
+    ActividadFisica af;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -63,9 +54,8 @@ public class MainActivity extends AppCompatActivity {
         if (savedInstanceState != null) {
             authInProgress = savedInstanceState.getBoolean(AUTH_PENDING);
         }
-        Conexion c1 = new Conexion();
+        Parse.initialize(this, YOUR_APPLICATION_ID, YOUR_CLIENT_KEY);
         buildFitnessClient();
-
     }
 
     @Override
@@ -141,8 +131,24 @@ public class MainActivity extends AppCompatActivity {
                                 // Now you can make calls to the Fitness APIs.
                                 // Put application specific code here
                                 //invokeFitnessAPIs();
-
-
+                                af = new ActividadFisica(1.1, 119, 1663, "01h 20min 00s");
+                                //Parse.initialize(getBaseContext(), YOUR_APPLICATION_ID, YOUR_CLIENT_KEY);
+                                ParseUser.logInInBackground("clase_gimnasia", "12345Abcde", new LogInCallback() {
+                                    public void done(ParseUser user, ParseException e) {
+                                        if (user != null) {
+                                            // Hooray! The user is logged in.
+                                            af.setNombre(ParseUser.getCurrentUser().getUsername());
+                                            subirActividadFisica(af);
+                                            //Toast toast = Toast.makeText(this, "Enhorabuena "+usuarioActual.getUsername()+" te has conectado con total exito", Toast.LENGTH_SHORT);
+                                            //toast.show();
+                                        } else {
+                                            // Signup failed. Look at the ParseException to see what happened.
+                                            //Toast toast = Toast.makeText(this, "Comprueba usuario y contraseña, no es correcto", Toast.LENGTH_SHORT);
+                                            //toast.show();
+                                        }
+                                    }
+                                });
+                                ParseUser.logOut();
 
                             }
 
@@ -188,6 +194,17 @@ public class MainActivity extends AppCompatActivity {
                         }
                 )
                 .build();
+    }
+    public void subirActividadFisica(ActividadFisica af){
+        ParseObject ActividadFisica = new ParseObject("ActividadFisica");
+        ActividadFisica.put("Nombre", af.getNombre());
+        ActividadFisica.put("Distancia_Estimada", af.getDistancia_estimada());
+        ActividadFisica.put("Calorias", af.getCalorias());
+        ActividadFisica.put("Pasos", af.getPasos());
+        ActividadFisica.put("Duracion", af.getDuracion());
+        ActividadFisica.saveInBackground();
+        Toast toast = Toast.makeText(this, "Actividad Fisica creada correctamente", Toast.LENGTH_SHORT);
+        toast.show();
     }
 
     private void invokeFitnessAPIs() {
