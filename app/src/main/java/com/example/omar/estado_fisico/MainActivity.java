@@ -3,6 +3,12 @@ package com.example.omar.estado_fisico;
 import android.content.Intent;
 import android.content.IntentSender;
 import android.os.Bundle;
+import android.support.design.widget.NavigationView;
+import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentManager;
+import android.support.v4.view.GravityCompat;
+import android.support.v4.widget.DrawerLayout;
+import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
@@ -41,9 +47,15 @@ public class MainActivity extends AppCompatActivity {
     private boolean authInProgress = false;
     private GoogleApiClient mClient = null;
     private static final String TAG = MainActivity.class.getSimpleName();
-    public static final String YOUR_APPLICATION_ID = "ohGe5NCSShiJYNeAAFwezBNYB7vQii8wyqnE21LY";
-    public static final String YOUR_CLIENT_KEY = "00gfPorhPo6HfdXPNhvvBSnvEFgBEWf8cLp6dKWZ" ;
-    ActividadFisica af;
+    //ActividadFisica af;
+    /**
+     * Instancia del drawer
+     */
+    private DrawerLayout drawerLayout;
+    /**
+     * Titulo inicial del drawer
+     */
+    private String drawerTitle;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -51,11 +63,58 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
+        final ActionBar ab = getSupportActionBar();
+        if (ab != null) {
+            // Poner ícono del drawer toggle
+            ab.setHomeAsUpIndicator(R.drawable.ic_menu);
+            ab.setDisplayHomeAsUpEnabled(true);
+        }
+        drawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
+        NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
+        if (navigationView != null) {
+            // Añadir carácteristicas
+            setupDrawerContent(navigationView);
+        }
+        drawerTitle = getResources().getString(R.string.home_item);
+        if (savedInstanceState == null) {
+            // Seleccionar item
+            selectItem(drawerTitle);
+        }
         if (savedInstanceState != null) {
             authInProgress = savedInstanceState.getBoolean(AUTH_PENDING);
         }
-        Parse.initialize(this, YOUR_APPLICATION_ID, YOUR_CLIENT_KEY);
         buildFitnessClient();
+    }
+
+    private void setupDrawerContent(NavigationView navigationView) {
+        navigationView.setNavigationItemSelectedListener(
+                new NavigationView.OnNavigationItemSelectedListener() {
+                    @Override
+                    public boolean onNavigationItemSelected(MenuItem menuItem) {
+                        // Marcar item presionado
+                        menuItem.setChecked(true);
+                        // Crear nuevo fragmento
+                        String title = menuItem.getTitle().toString();
+                        selectItem(title);
+                        return true;
+                    }
+                }
+        );
+    }
+
+    private void selectItem(String title) {
+        // Enviar título como arguemento del fragmento
+        Bundle args = new Bundle();
+        args.putString(PlaceHolderFragment.ARG_SECTION_TITLE, title);
+        Fragment fragment = PlaceHolderFragment.newInstance(title);
+        fragment.setArguments(args);
+        FragmentManager fragmentManager = getSupportFragmentManager();
+        fragmentManager
+                .beginTransaction()
+                .replace(R.id.main_content, fragment)
+                .commit();
+        drawerLayout.closeDrawers(); // Cerrar drawer
+        setTitle(title); // Setear título actual
     }
 
     @Override
@@ -96,8 +155,11 @@ public class MainActivity extends AppCompatActivity {
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
-        getMenuInflater().inflate(R.menu.menu_main, menu);
-        return true;
+        if (!drawerLayout.isDrawerOpen(GravityCompat.START)) {
+            getMenuInflater().inflate(R.menu.menu_main, menu);
+            return true;
+        }
+        return super.onCreateOptionsMenu(menu);
     }
 
     @Override
@@ -108,7 +170,8 @@ public class MainActivity extends AppCompatActivity {
         int id = item.getItemId();
 
         //noinspection SimplifiableIfStatement
-        if (id == R.id.action_settings) {
+        if (id == R.id.home) {
+            drawerLayout.openDrawer(GravityCompat.START);
             return true;
         }
 
@@ -131,14 +194,14 @@ public class MainActivity extends AppCompatActivity {
                                 // Now you can make calls to the Fitness APIs.
                                 // Put application specific code here
                                 //invokeFitnessAPIs();
-                                af = new ActividadFisica(1.1, 119, 1663, "01h 20min 00s");
+                                //af = new ActividadFisica(1.1, 119, 1663, "01h 20min 00s");
                                 //Parse.initialize(getBaseContext(), YOUR_APPLICATION_ID, YOUR_CLIENT_KEY);
                                 ParseUser.logInInBackground("clase_gimnasia", "12345Abcde", new LogInCallback() {
                                     public void done(ParseUser user, ParseException e) {
                                         if (user != null) {
                                             // Hooray! The user is logged in.
-                                            af.setNombre(ParseUser.getCurrentUser().getUsername());
-                                            subirActividadFisica(af);
+                                            //af.setNombre(ParseUser.getCurrentUser().getUsername());
+                                            //subirActividadFisica(af);
                                             //Toast toast = Toast.makeText(this, "Enhorabuena "+usuarioActual.getUsername()+" te has conectado con total exito", Toast.LENGTH_SHORT);
                                             //toast.show();
                                         } else {

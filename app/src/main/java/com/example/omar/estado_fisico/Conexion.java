@@ -18,23 +18,25 @@ import bolts.Task;
  * Created by Omar on 10/01/2016.
  */
 public class Conexion{
-    private static final String YOUR_APPLICATION_ID = "cXkbJXWcghLYLgCDP4Dd7ROSE9VBkaKc7n1q1PZG";
-    private static final String YOUR_CLIENT_KEY = "06QSIEHBSdZ5oXeCelgQ681TfWYGW3OICVahyx9I" ;
+    private static final String YOUR_APPLICATION_ID = "ohGe5NCSShiJYNeAAFwezBNYB7vQii8wyqnE21LY";
+    private static final String YOUR_CLIENT_KEY = "00gfPorhPo6HfdXPNhvvBSnvEFgBEWf8cLp6dKWZ" ;
     private MainActivity principal;
     private boolean estaConectado=false;
     public ParseUser usuarioActual;
 
     public Conexion(MainActivity principal) {
+        Parse.initialize(principal, YOUR_APPLICATION_ID, YOUR_CLIENT_KEY);
         this.principal = principal;
     }
 
-    public void conectar(){
-        Parse.initialize(principal, YOUR_APPLICATION_ID, YOUR_CLIENT_KEY);
+    public void conectar(final ActividadFisica af){
         ParseUser.logInInBackground("clase_gimnasia", "12345Abcde",new LogInCallback() {
             public void done(ParseUser user, ParseException e) {
                 if (user != null) {
                     // Hooray! The user is logged in.
                     usuarioActual = ParseUser.getCurrentUser();
+                    af.setNombre(usuarioActual.getUsername());
+                    subirActividadFisica(af);
                     Toast toast = Toast.makeText(principal.getBaseContext(), "Enhorabuena "+usuarioActual.getUsername()+" te has conectado con total exito", Toast.LENGTH_SHORT);
                     toast.show();
                     estaConectado=true;
@@ -52,7 +54,6 @@ public class Conexion{
     }
 
     public void subirActividadFisica(ActividadFisica af){
-            //af.setNombre(usuarioActual.getUsername());
             ParseObject ActividadFisica = new ParseObject("ActividadFisica");
             ActividadFisica.put("Nombre", af.getNombre());
             ActividadFisica.put("Distancia_Estimada", af.getDistancia_estimada());
